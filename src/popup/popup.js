@@ -11,6 +11,7 @@ global.browser = require('webextension-polyfill')
 Vue.prototype.$browser = global.browser
 
 store.dispatch('loadAccounts')
+store.dispatch('getSignRequest')
 
 Vue.use(Tooltip, { delay: 1 })
 Vue.use(Vuelidate)
@@ -18,8 +19,7 @@ Vue.use(VueClipboard)
 Vue.directive(`focus`, focusElement)
 
 router.beforeEach(async (to, from, next) => {
-  const pendingSignRequests = !!(await store.dispatch('getSignRequest'))
-
+  const pendingSignRequests = !!store.state.signRequest
   if (pendingSignRequests && to.name !== 'approve') {
     next('/approve')
   } else {
