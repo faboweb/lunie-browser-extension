@@ -11,21 +11,21 @@ global.browser = require('webextension-polyfill')
 Vue.prototype.$browser = global.browser
 
 store.dispatch('loadAccounts')
-store.dispatch('getSignRequest')
+// store.dispatch('getSignRequest')
 
 Vue.use(Tooltip, { delay: 1 })
 Vue.use(Vuelidate)
 Vue.use(VueClipboard)
 Vue.directive(`focus`, focusElement)
 
-router.beforeEach(async (to, from, next) => {
-  const pendingSignRequests = !!store.state.signRequest
-  if (pendingSignRequests && to.name !== 'approve') {
-    next('/approve')
-  } else {
-    next()
-  }
-})
+// router.beforeEach(async (to, from, next) => {
+//   const pendingSignRequests = false //!!store.state.signRequest
+//   if (pendingSignRequests && to.name !== 'approve') {
+//     next('/approve')
+//   } else {
+//     next()
+//   }
+// })
 
 /* eslint-disable no-new */
 new Vue({

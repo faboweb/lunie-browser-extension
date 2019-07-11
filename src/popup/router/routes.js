@@ -1,17 +1,17 @@
-import store from '../../store'
+// import store from '../../store'
 
 export default [
   {
     path: `/`,
     name: `accounts`,
-    component: require('../../components/SessionAccounts').default,
-    beforeEnter: (to, from, next) => {
-      if (!store.state.accounts) {
-        next({ path: '/welcome' })
-      } else {
-        next()
-      }
-    }
+    component: require('../../components/SessionAccounts').default
+    // beforeEnter: (to, from, next) => {
+    //   if (!store.state.accounts) {
+    //     next({ path: '/welcome' })
+    //   } else {
+    //     next()
+    //   }
+    // }
   },
   {
     path: '/welcome',
@@ -36,13 +36,13 @@ export default [
   {
     path: `/approve`,
     name: `approve`,
-    component: require('common/SessionApprove').default,
-    beforeEnter: (to, from, next) => {
-      if (!store.state.signRequest) {
-        next({ path: '/accounts' })
-      } else {
-        next()
-      }
-    }
+    component: require('common/SessionApprove').default
+    // beforeEnter: (to, from, next) => {
+    //   if (!store.state.signRequest) {
+    //     next({ path: '/accounts' })
+    //   } else {
+    //     next()
+    //   }
+    // }
   }
 ]
