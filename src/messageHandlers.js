@@ -8,6 +8,7 @@ const {
   removeWallet,
   getSeed
 } = require('@lunie/cosmos-keys')
+import { subscribeToEventsForAddress } from './notifications'
 
 export function signMessageHandler(
   signRequestQueue,
@@ -78,12 +79,14 @@ export function walletMessageHandler(message, sender, sendResponse) {
       const { name, password, mnemonic } = message.payload
       const wallet = getNewWalletFromSeed(mnemonic)
       storeWallet(wallet, name, password)
+      subscribeToEventsForAddress('cosmos-hub-mainnet', wallet.address)
       sendResponse()
       break
     }
     case 'DELETE_WALLET': {
       const { address, password } = message.payload
       removeWallet(address, password)
+      // TODO unsubscribe for notifications
       sendResponse()
       break
     }
