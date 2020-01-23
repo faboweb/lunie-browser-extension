@@ -1,4 +1,6 @@
-import store from '../../store'
+import Store from '../../store'
+
+const store = Store()
 
 export default [
   {
@@ -48,6 +50,11 @@ export default [
     path: `/recover`,
     name: `recover`,
     component: require('common/TmSessionImport').default
+  },
+  {
+    path: `/selectnetwork`,
+    name: `selectnetwork`,
+    component: require('common/TmSelectNetwork').default
   },
   {
     path: `/recover/name`,

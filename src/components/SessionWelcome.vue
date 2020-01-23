@@ -8,7 +8,7 @@
           id="create-new-address"
           icon="person_add"
           title="Create a new address"
-          route="/create"
+          route="/selectnetwork"
         />
         <LiSession
           id="recover-with-backup"
