@@ -18,6 +18,7 @@ exports[`SessionWelcome has the expected html structure 1`] = `
       <lisession-stub
         icon="person_add"
         id="create-new-address"
+        img=""
         route="/selectnetwork"
         title="Create a new address"
       />
@@ -25,6 +26,7 @@ exports[`SessionWelcome has the expected html structure 1`] = `
       <lisession-stub
         icon="settings_backup_restore"
         id="recover-with-backup"
+        img=""
         route="/recover"
         title="Recover with backup code"
       />
@@ -32,6 +34,7 @@ exports[`SessionWelcome has the expected html structure 1`] = `
       <lisession-stub
         icon="person"
         id="see-accounts"
+        img=""
         route="/accounts"
         title="See existing accounts"
       />
