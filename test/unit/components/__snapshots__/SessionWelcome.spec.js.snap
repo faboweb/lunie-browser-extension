@@ -18,7 +18,7 @@ exports[`SessionWelcome has the expected html structure 1`] = `
       <lisession-stub
         icon="person_add"
         id="create-new-address"
-        route="/create"
+        route="/selectnetwork"
         title="Create a new address"
       />
        
