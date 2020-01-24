@@ -9,7 +9,10 @@ export const createSeed = () => {
   })
 }
 
-export const createKey = ({ dispatch }, { seedPhrase, password, name }) => {
+export const createKey = (
+  { dispatch },
+  { seedPhrase, password, name, prefix }
+) => {
   return new Promise(resolve => {
     chrome.runtime.sendMessage(
       {
@@ -17,6 +20,7 @@ export const createKey = ({ dispatch }, { seedPhrase, password, name }) => {
         payload: {
           password,
           name,
+          prefix,
           mnemonic: seedPhrase
         }
       },

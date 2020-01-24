@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import App from './App'
 import Store from '../store'
-import router from './router'
+import Router from './router'
 import config from '../../config'
 import Vuelidate from 'vuelidate'
 import VueAnalytics from 'vue-analytics'
@@ -19,6 +19,8 @@ const apolloProvider = createApolloProvider()
 const apolloClient = apolloProvider.clients.defaultClient
 const store = Store({ apollo: apolloClient })
 store.dispatch('loadAccounts')
+
+const router = Router(store)
 
 Vue.use(Tooltip, { delay: 1 })
 Vue.use(Vuelidate)

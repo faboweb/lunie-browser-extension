@@ -75,8 +75,8 @@ export function walletMessageHandler(message, sender, sendResponse) {
       break
     }
     case 'IMPORT_WALLET': {
-      const { name, password, mnemonic } = message.payload // TODO add network prefix inside message.payload
-      const wallet = getNewWalletFromSeed(mnemonic, `cosmos`) // defaults to cosmos
+      const { name, password, prefix, mnemonic } = message.payload // TODO add network prefix inside message.payload
+      const wallet = getNewWalletFromSeed(mnemonic, prefix) // defaults to cosmos
       storeWallet(wallet, name, password)
       sendResponse()
       break
