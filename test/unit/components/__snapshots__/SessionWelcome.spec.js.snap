@@ -27,7 +27,7 @@ exports[`SessionWelcome has the expected html structure 1`] = `
         icon="settings_backup_restore"
         id="recover-with-backup"
         img=""
-        route="/recover"
+        route="/selectnetwork/recover"
         title="Recover with backup code"
       />
        
