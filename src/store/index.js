@@ -28,6 +28,7 @@ export default (opts = {}) => {
       recover: {
         seed: ``,
         name: ``,
+        prefix: ``,
         password: ``,
         passwordConfirm: ``
       }

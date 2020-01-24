@@ -20,6 +20,9 @@ export const updateField = (state, payload) => {
   if (payload.field === `password`) {
     state.recover.password = payload.value
   }
+  if (payload.field === `prefix`) {
+    state.recover.prefix = payload.value
+  }
   if (payload.field === `passwordConfirm`) {
     state.recover.passwordConfirm = payload.value
   }
