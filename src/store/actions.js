@@ -179,7 +179,7 @@ export const resetRecoverData = ({ commit }) => {
   commit(`resetRecoverData`)
 }
 
-export const getAddressFromSeed = (store, seedPhrase) => {
-  const wallet = getNewWalletFromSeed(seedPhrase)
+export const getAddressFromSeed = (store, { seedPhrase, prefix }) => {
+  const wallet = getNewWalletFromSeed(seedPhrase, prefix || 'cosmos')
   return wallet.cosmosAddress
 }

@@ -3,7 +3,6 @@ export const setSignRequest = (state, signRequest) => {
 }
 
 export const setAccounts = (state, accounts) => {
-  console.log('setAccount triggered')
   state.accounts = accounts
 }
 
