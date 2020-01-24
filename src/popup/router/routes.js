@@ -54,6 +54,11 @@ export default store => {
       component: require('common/TmSelectNetwork').default
     },
     {
+      path: `/selectnetwork/:recover`,
+      name: `selectnetwork`,
+      component: require('common/TmSelectNetwork').default
+    },
+    {
       path: `/recover/name`,
       name: `recover-name`,
       component: require('common/TmSessionImportName').default

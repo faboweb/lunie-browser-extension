@@ -14,7 +14,7 @@
           id="recover-with-backup"
           icon="settings_backup_restore"
           title="Recover with backup code"
-          route="/recover"
+          route="/selectnetwork/recover"
         />
         <LiSession
           v-if="accounts.length > 0"
