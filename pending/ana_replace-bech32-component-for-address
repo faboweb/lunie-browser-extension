@@ -1,0 +1,1 @@
+[Fixed] [#174](https://github.com/cosmos/lunie/pull/174) Replaces the deprecated Bech32 component in SessionApprove with the new Address component @Bitcoinera
