@@ -6,9 +6,15 @@ import { lunieMessageTypes } from '../scripts/parsers'
 import { parseTx } from '../scripts/parsers.js'
 
 export default ({ apollo }) => {
-  const createSeed = () => {
+  const createSeed = async ({ dispatch }, { network }) => {
+    console.log(dispatch) // hack for linter
+    let messageType = ''
+    const net = await getNetwork(network, apollo)
+    messageType = net.id.startsWith(`polkadot`)
+      ? 'GET_POLKADOT_SEED'
+      : 'GET_COSMOS_SEED'
     return new Promise(resolve => {
-      chrome.runtime.sendMessage({ type: 'GET_SEED' }, function(seed) {
+      chrome.runtime.sendMessage({ type: messageType }, function(seed) {
         resolve(seed)
       })
     })
@@ -243,9 +249,33 @@ export default ({ apollo }) => {
     return signRequest ? parseTx(signRequest, displayedProperties) : null
   }
 
+  // creates a polkadot address
+  async function createPolkadotAddress(seedPhrase, addressPrefix) {
+    const [{ Keyring }] = await Promise.all([
+      import('@polkadot/api'),
+      import('@polkadot/util-crypto').then(async ({ cryptoWaitReady }) => {
+        // Wait for the promise to resolve, async WASM or `cryptoWaitReady().then(() => { ... })`
+        await cryptoWaitReady()
+      })
+    ])
+
+    const keyring = new Keyring({
+      ss58Format: Number(addressPrefix),
+      type: 'ed25519'
+    })
+    const newPair = keyring.addFromUri(seedPhrase)
+
+    return {
+      cosmosAddress: newPair.address,
+      publicKey: newPair.publicKey,
+      seedPhrase
+    }
+  }
+
   return {
     createSeed,
     createKey,
+    createPolkadotAddress,
     loadAccounts,
     getNetworkByAddress,
     testLogin,

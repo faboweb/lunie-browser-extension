@@ -8,6 +8,7 @@ const {
   removeWallet,
   getSeed
 } = require('@lunie/cosmos-keys')
+const { createPolkadotAddress } = require('./store/actions')
 
 export function signMessageHandler(
   signRequestQueue,
@@ -85,9 +86,14 @@ export function signMessageHandler(
   }
 }
 export function walletMessageHandler(message, sender, sendResponse) {
+  console.log('Message is', message)
   switch (message.type) {
-    case 'GET_SEED': {
+    case 'GET_COSMOS_SEED': {
       sendResponse(getSeed())
+      break
+    }
+    case 'GET_POLKADOT_SEED': {
+      sendResponse(createPolkadotAddress())
       break
     }
     case 'GET_WALLETS': {

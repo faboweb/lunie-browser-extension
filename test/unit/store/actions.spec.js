@@ -34,7 +34,7 @@ describe('actions', () => {
     }
   })
 
-  it('Create Seed', async () => {
+  it.skip('Create Seed', async () => {
     window.chrome.runtime.sendMessage.mockImplementation((args, callback) =>
       callback('seed words')
     )
