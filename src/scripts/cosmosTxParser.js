@@ -1,274 +1,113 @@
-import BigNumber from 'bignumber.js'
 import lunieMessageTypes from './messageTypes'
 
 export const parseCosmosTx = (network, lunieTransaction) => {
-  return transactionReducerV2(
-    lunieTransaction,
-    { coinReducer, rewardCoinReducer },
-    network.stakingDenom
-  )[0] // TODO get staking denom (apollo/networks)
+  return transactionReducerV2(lunieTransaction, network.stakingDenom) // TODO get staking denom (apollo/networks)
 }
 
-// delegations rewards in Tendermint are located in events as strings with this form:
-// amount: {"15000umuon"}, or in multidenom networks they look like this:
-// amount: {"15000ungm,100000uchf,110000ueur,2000000ujpy"}
-// That is why we need this separate function to extract those amounts in this format
-function rewardCoinReducer(reward, stakingDenom) {
-  const numBit = reward.match(/[0-9]+/gi)
-  const stringBit = reward.match(/[a-z]+/gi)
-  const multiDenomRewardsArray = reward.split(`,`)
-  if (multiDenomRewardsArray.length > 1) {
-    const mappedMultiDenomRewardsArray = multiDenomRewardsArray.map(reward =>
-      rewardCoinReducer(reward)
-    )
-    let stakingDenomRewards = mappedMultiDenomRewardsArray.find(
-      ({ denom }) => denom === denomLookup(stakingDenom)
-    )
-    // if there is no staking denom reward we will display the first alt-token reward
-    return (
-      stakingDenomRewards ||
-      mappedMultiDenomRewardsArray.find(({ amount }) => amount > 0)
-    )
-  }
+function transactionReducerV2(lunieTransaction, stakingDenom) {
   return {
-    denom: denomLookup(stringBit),
-    amount: BigNumber(numBit).div(1000000)
+    type: lunieTransaction.type,
+    hash: lunieTransaction.hash,
+    height: lunieTransaction.height,
+    details: transactionDetailsReducer(lunieTransaction, stakingDenom),
+    timestamp: lunieTransaction.timestamp,
+    memo: lunieTransaction.memo,
+    fees: lunieTransaction.fees,
+    success: lunieTransaction.success
   }
-}
-
-// map Cosmos SDK message types to Lunie message types
-function getMessageType(type) {
-  // different networks use different prefixes for the transaction types like cosmos/MsgSend vs core/MsgSend in Terra
-  const transactionTypeSuffix = type.split('/')[1]
-  switch (transactionTypeSuffix) {
-    case 'MsgSend':
-      return lunieMessageTypes.SEND
-    case 'MsgDelegate':
-      return lunieMessageTypes.STAKE
-    case 'MsgBeginRedelegate':
-      return lunieMessageTypes.RESTAKE
-    case 'MsgUndelegate':
-      return lunieMessageTypes.UNSTAKE
-    case 'MsgWithdrawDelegationReward':
-      return lunieMessageTypes.CLAIM_REWARDS
-    case 'MsgSubmitProposal':
-      return lunieMessageTypes.SUBMIT_PROPOSAL
-    case 'MsgVote':
-      return lunieMessageTypes.VOTE
-    case 'MsgDeposit':
-      return lunieMessageTypes.DEPOSIT
-    default:
-      return lunieMessageTypes.UNKNOWN
-  }
-}
-
-function denomLookup(denom) {
-  const lookup = {
-    uatom: 'ATOM',
-    umuon: 'MUON',
-    uluna: 'LUNA',
-    ukrw: 'KRT',
-    umnt: 'MNT',
-    usdr: 'SDT',
-    uusd: 'UST',
-    seed: 'TREE',
-    ungm: 'NGM',
-    eeur: 'eEUR',
-    echf: 'eCHF',
-    ejpy: 'eJPY',
-    eusd: 'eUSD'
-  }
-  return lookup[denom] ? lookup[denom] : denom.toUpperCase()
-}
-
-function coinReducer(coin) {
-  if (!coin) {
-    return {
-      amount: 0,
-      denom: ''
-    }
-  }
-
-  // we want to show only atoms as this is what users know
-  const denom = denomLookup(coin.denom)
-  return {
-    denom: denom,
-    amount: BigNumber(coin.amount)
-      .div(1000000)
-      .toNumber() // Danger: this might not be the case for all future tokens
-  }
-}
-
-function transactionReducerV2(lunieTransaction, reducers, stakingDenom) {
-  const fees = lunieTransaction.fee
-  const transaction = {} // temporary because of linting
-  // We do display only the transactions we support in Lunie
-
-  // TODO: hyper-simplify using just lunieTransaction
-  const filteredMessages = transaction.tx.value.msg.filter(
-    ({ type }) => getMessageType(type) !== 'Unknown'
-  )
-  const { claimMessages, otherMessages } = filteredMessages.reduce(
-    ({ claimMessages, otherMessages }, message) => {
-      // we need to aggregate all withdraws as we display them together in one transaction
-      if (getMessageType(message.type) === lunieMessageTypes.CLAIM_REWARDS) {
-        claimMessages.push(message)
-      } else {
-        otherMessages.push(message)
-      }
-      return { claimMessages, otherMessages }
-    },
-    { claimMessages: [], otherMessages: [] }
-  )
-
-  // we need to aggregate claim rewards messages in one single one to avoid transaction repetition
-  const claimMessage =
-    claimMessages.length > 0
-      ? claimRewardsMessagesAggregator(claimMessages)
-      : undefined
-  const allMessages = claimMessage
-    ? otherMessages.concat(claimMessage) // add aggregated claim message
-    : otherMessages
-  const returnedMessages = allMessages.map(({ value, type }, index) => ({
-    type: getMessageType(type),
-    hash: transaction.txhash,
-    height: transaction.height,
-    details: transactionDetailsReducer(
-      getMessageType(type),
-      value,
-      lunieTransaction,
-      reducers,
-      transaction,
-      stakingDenom
-    ),
-    timestamp: transaction.timestamp,
-    memo: transaction.tx.value.memo,
-    fees,
-    success: transaction.logs ? transaction.logs[index].success : false
-  }))
-  return returnedMessages
 }
 
 // function to map cosmos messages to our details format
-function transactionDetailsReducer(
-  type,
-  message,
-  lunieTransaction,
-  reducers,
-  transaction,
-  stakingDenom
-) {
+function transactionDetailsReducer(lunieTransaction, stakingDenom) {
   let details
-  switch (type) {
+  switch (lunieTransaction.type) {
     case lunieMessageTypes.SEND:
-      details = sendDetailsReducer(message, reducers)
+      details = sendDetailsReducer(lunieTransaction)
       break
     case lunieMessageTypes.STAKE:
-      details = stakeDetailsReducer(message, reducers)
+      details = stakeDetailsReducer(lunieTransaction)
       break
     case lunieMessageTypes.RESTAKE:
-      details = restakeDetailsReducer(message, reducers)
+      details = restakeDetailsReducer(lunieTransaction)
       break
     case lunieMessageTypes.UNSTAKE:
-      details = unstakeDetailsReducer(message, reducers)
+      details = unstakeDetailsReducer(lunieTransaction)
       break
     case lunieMessageTypes.CLAIM_REWARDS:
-      details = claimRewardsDetailsReducer(
-        message,
-        lunieTransaction,
-        reducers,
-        transaction,
-        stakingDenom
-      )
+      details = claimRewardsDetailsReducer(lunieTransaction, stakingDenom)
       break
     case lunieMessageTypes.SUBMIT_PROPOSAL:
-      details = submitProposalDetailsReducer(message, reducers)
+      details = submitProposalDetailsReducer(lunieTransaction)
       break
     case lunieMessageTypes.VOTE:
-      details = voteProposalDetailsReducer(message, reducers)
+      details = voteProposalDetailsReducer(lunieTransaction)
       break
     case lunieMessageTypes.DEPOSIT:
-      details = depositDetailsReducer(message, reducers)
+      details = depositDetailsReducer(lunieTransaction)
       break
     default:
       details = {}
   }
 
+  return details
+}
+
+function sendDetailsReducer(lunieTransaction) {
   return {
-    type,
-    ...details
+    from: [lunieTransaction.details.from],
+    to: [lunieTransaction.details.to],
+    amount: lunieTransaction.details.amount
   }
 }
 
-function claimRewardsMessagesAggregator(claimMessages) {
-  // reduce all withdraw messages to one one collecting the validators from all the messages
-  const onlyValidatorsAddressesArray = claimMessages.map(
-    msg => msg.value.validator_address
-  )
+function stakeDetailsReducer(lunieTransaction) {
   return {
-    type: `type/MsgWithdrawDelegationReward`,
-    value: {
-      validators: onlyValidatorsAddressesArray
-    }
+    to: [lunieTransaction.details.to],
+    amount: lunieTransaction.details.amount
   }
 }
 
-function sendDetailsReducer(message, reducers) {
+function restakeDetailsReducer(lunieTransaction) {
   return {
-    from: [message.from_address],
-    to: [message.to_address],
-    amount: reducers.coinReducer(message.amount[0])
+    from: [lunieTransaction.details.from],
+    to: [lunieTransaction.details.to],
+    amount: lunieTransaction.details.amount
   }
 }
 
-function stakeDetailsReducer(message, reducers) {
+function unstakeDetailsReducer(lunieTransaction) {
   return {
-    to: [message.validator_address],
-    amount: reducers.coinReducer(message.amount)
+    from: [lunieTransaction.details.from],
+    amount: lunieTransaction.details.amount
   }
 }
 
-function restakeDetailsReducer(message, reducers) {
+function claimRewardsDetailsReducer(lunieTransaction) {
   return {
-    from: [message.validator_src_address],
-    to: [message.validator_dst_address],
-    amount: reducers.coinReducer(message.amount)
-  }
-}
-
-function unstakeDetailsReducer(message, reducers) {
-  return {
-    from: [message.validator_address],
-    amount: reducers.coinReducer(message.amount)
-  }
-}
-
-function claimRewardsDetailsReducer(message, lunieTransaction) {
-  return {
-    from: message.validators,
+    from: lunieTransaction.details.from,
     amounts: lunieTransaction.details.amounts
   }
 }
 
-function submitProposalDetailsReducer(message, reducers) {
+function submitProposalDetailsReducer(lunieTransaction) {
   return {
-    proposalType: message.content.type,
-    proposalTitle: message.content.value.title,
-    proposalDescription: message.content.value.description,
-    initialDeposit: reducers.coinReducer(message.initial_deposit[0])
+    proposalType: lunieTransaction.proposalType,
+    proposalTitle: lunieTransaction.proposalTitle,
+    proposalDescription: lunieTransaction.proposalDescription,
+    initialDeposit: lunieTransaction.initialDeposit
   }
 }
 
-function voteProposalDetailsReducer(message) {
+function voteProposalDetailsReducer(lunieTransaction) {
   return {
-    proposalId: message.proposal_id,
-    voteOption: message.option
+    proposalId: lunieTransaction.proposalId,
+    voteOption: lunieTransaction.voteOption
   }
 }
 
-function depositDetailsReducer(message, reducers) {
+function depositDetailsReducer(lunieTransaction) {
   return {
-    proposalId: message.proposal_id,
-    amount: reducers.coinReducer(message.amount[0])
+    proposalId: lunieTransaction.proposalId,
+    amount: lunieTransaction.details.amount
   }
 }

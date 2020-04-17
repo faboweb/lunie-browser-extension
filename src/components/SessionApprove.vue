@@ -115,7 +115,7 @@ export default {
       return this.signRequest ? this.signRequest.network : null
     },
     fees() {
-      return this.tx ? this.tx.fees[0].amount : null
+      return this.tx ? this.tx.fees.amount : null
     },
     lunieTx() {
       return this.signRequest ? this.signRequest.lunieTransaction : {}
@@ -123,14 +123,11 @@ export default {
     senderAddress() {
       return this.signRequest ? this.signRequest.senderAddress : null
     },
-    amountCoin() {
-      return this.tx ? this.tx.details.amount : null
-    },
     amount() {
-      return this.amountCoin ? this.amountCoin.amount : 0
+      return this.tx ? this.tx.details.amount.amount : 0
     },
     bondDenom() {
-      return this.amountCoin ? this.amountCoin.denom : ''
+      return this.tx ? this.tx.details.amount.denom : ''
     },
     validatorsAddressMap() {
       const names = {}

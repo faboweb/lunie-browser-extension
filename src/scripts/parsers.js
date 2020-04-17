@@ -3,7 +3,8 @@
 import { parseCosmosTx } from './cosmosTxParser'
 import { parsePolkadotTx } from './polkadotTxParser'
 
-export const parseTx = (network, lunieTransaction) => {
+export const parseTx = (signRequest, network, lunieTransaction) => {
+  console.log('signRequest', signRequest) // for now because of linter
   if (network.network_type === 'cosmos') {
     return parseCosmosTx(network, lunieTransaction)
   }
