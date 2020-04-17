@@ -18,7 +18,7 @@ describe(`SessionApprove`, () => {
         signMessage,
         network: 'fabo-net'
       },
-      networks: [{ id: 'fabo-net' }]
+      networks: [{ id: 'fabo-net', network_type: 'cosmos' }]
     }
 
     $store = {
@@ -65,6 +65,7 @@ describe(`SessionApprove`, () => {
       expect(wrapper.vm.$store.dispatch).toHaveBeenCalledWith(
         'approveSignRequest',
         {
+          network: 'fabo-net',
           password: '1234',
           senderAddress: 'cosmos1234',
           signMessage
@@ -84,6 +85,7 @@ describe(`SessionApprove`, () => {
     expect(wrapper.vm.$store.dispatch).toHaveBeenCalledWith(
       'rejectSignRequest',
       {
+        network: 'fabo-net',
         signMessage,
         senderAddress: 'cosmos1234'
       }

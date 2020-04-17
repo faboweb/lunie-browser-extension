@@ -1,6 +1,6 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import BigNumber from 'bignumber.js'
-import lunieMessageTypes from './cosmosTxParser'
+import lunieMessageTypes from './messageTypes'
 
 async function getPolkadotApi(network) {
   const api = new ApiPromise({

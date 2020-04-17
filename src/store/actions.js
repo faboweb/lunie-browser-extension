@@ -1,7 +1,7 @@
 import config from '../../config.js'
 import gql from 'graphql-tag'
 import { NetworksAll } from '../popup/gql'
-import { lunieMessageTypes } from '../scripts/parsers'
+import lunieMessageTypes from '../scripts/messageTypes'
 import { parseTx } from '../scripts/parsers.js'
 import { getWallet } from '../../lunie/src/vuex/modules/wallet'
 import { storeWallet } from '@lunie/cosmos-keys'

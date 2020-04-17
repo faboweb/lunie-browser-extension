@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
+import lunieMessageTypes from './messageTypes'
 
-export const parseCosmosTx = (signMessage, displayedProperties) => {
+export const parseCosmosTx = (signMessage, network, displayedProperties) => {
   const { msgs, fee, memo } = JSON.parse(signMessage)
 
   const tx = {
@@ -18,7 +19,7 @@ export const parseCosmosTx = (signMessage, displayedProperties) => {
     tx,
     displayedProperties,
     { coinReducer, rewardCoinReducer },
-    'STAKE'
+    network.stakingDenom
   )[0] // TODO get staking denom (apollo/networks)
 }
 
@@ -47,18 +48,6 @@ function rewardCoinReducer(reward, stakingDenom) {
     denom: denomLookup(stringBit),
     amount: BigNumber(numBit).div(1000000)
   }
-}
-
-export const lunieMessageTypes = {
-  SEND: `SendTx`,
-  STAKE: `StakeTx`,
-  RESTAKE: `RestakeTx`,
-  UNSTAKE: `UnstakeTx`,
-  VOTE: `VoteTx`,
-  DEPOSIT: `DepositTx`,
-  CLAIM_REWARDS: `ClaimRewardsTx`,
-  SUBMIT_PROPOSAL: `SubmitProposalTx`,
-  UNKNOWN: `UnknownTx`
 }
 
 // map Cosmos SDK message types to Lunie message types

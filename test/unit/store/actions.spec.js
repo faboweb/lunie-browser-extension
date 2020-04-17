@@ -209,7 +209,11 @@ describe('actions', () => {
     }
 
     await expect(
-      getValidatorsData(parseSignMessageTx(JSON.stringify(v1)))
+      getValidatorsData(
+        parseSignMessageTx(JSON.stringify(v1), {
+          network_type: 'cosmos'
+        })
+      )
     ).resolves.toEqual([
       {
         name: 'name1',
@@ -252,7 +256,11 @@ describe('actions', () => {
     }
 
     await expect(
-      getValidatorsData(parseSignMessageTx(JSON.stringify(validatorAddress)))
+      getValidatorsData(
+        parseSignMessageTx(JSON.stringify(validatorAddress), {
+          network_type: 'cosmos'
+        })
+      )
     ).resolves.toEqual([
       {
         operatorAddress: 'dstaddress1',

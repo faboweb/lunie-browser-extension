@@ -5,7 +5,7 @@ import { parsePolkadotTx } from './polkadotTxParser'
 
 export const parseTx = (signMessage, network, displayedProperties) => {
   if (network.network_type === 'cosmos') {
-    return parseCosmosTx(signMessage, displayedProperties)
+    return parseCosmosTx(signMessage, network, displayedProperties)
   }
   if (network.network_type === 'polkadot') {
     return parsePolkadotTx(signMessage, network, displayedProperties)
