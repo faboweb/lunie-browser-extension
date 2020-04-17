@@ -54,7 +54,12 @@ describe(`parsers helper`, () => {
 
   it(`should parse a signedmessaged parseFee if there are no fees`, () => {
     const noFeesSignedMessage = signedMessage
+    const network = {
+      network_type: 'cosmos'
+    }
     noFeesSignedMessage.fee.amount = { amount: 0, denom: 'stake' }
-    expect(parseTx(JSON.stringify(noFeesSignedMessage)).fees[0].amount).toBe(0)
+    expect(
+      parseTx(JSON.stringify(noFeesSignedMessage), network).fees[0].amount
+    ).toBe(0)
   })
 })

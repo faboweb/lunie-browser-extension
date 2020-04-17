@@ -15,8 +15,10 @@ describe(`SessionApprove`, () => {
     const getters = {
       signRequest: {
         senderAddress: 'cosmos1234',
-        signMessage
-      }
+        signMessage,
+        network: 'fabo-net'
+      },
+      networks: [{ id: 'fabo-net' }]
     }
 
     $store = {
