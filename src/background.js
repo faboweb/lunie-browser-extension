@@ -21,15 +21,15 @@ const signRequestQueue = new SignRequestQueue()
 signRequestQueue.unqueueSignRequest('')
 
 // main message handler
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   if (!senderAllowed(sender)) {
     console.error('Sender is not whitelisted')
     return
   }
 
   try {
-    signMessageHandler(signRequestQueue, message, sender, sendResponse)
-    walletMessageHandler(message, sender, sendResponse)
+    await signMessageHandler(signRequestQueue, message, sender, sendResponse)
+    await walletMessageHandler(message, sender, sendResponse)
   } catch (error) {
     // Return this as rejected
     console.error('Error with request', error)

@@ -1,12 +1,11 @@
 const {
   getWalletIndex,
-  getStoredWallet,
-  signWithPrivateKey,
   testPassword,
   removeWallet
 } = require('@lunie/cosmos-keys')
+const { getSigner } = require('src/ActionModal/signer/utils')
 
-export function signMessageHandler(
+export async function signMessageHandler(
   signRequestQueue,
   message,
   sender,
@@ -31,6 +30,7 @@ export function signMessageHandler(
         signMessage,
         senderAddress,
         network,
+        networkType,
         displayedProperties
       } = message.payload
       const wallet = getWalletFromIndex(getWalletIndex(), senderAddress)
@@ -41,26 +41,36 @@ export function signMessageHandler(
         signMessage,
         senderAddress,
         network,
+        networkType,
         displayedProperties,
         tabID: sender.tab.id
       })
       break
     }
     case 'SIGN': {
-      const { signMessage, senderAddress, password, id } = message.payload
-      const wallet = getStoredWallet(senderAddress, password)
+      const {
+        signMessage,
+        senderAddress,
+        password,
+        id,
+        network,
+        networkType
+      } = message.payload
+      const signer = await getSigner({}, 'local', {
+        address: senderAddress,
+        password,
+        network,
+        networkType
+      })
+
+      // for Polkadot this is the signed extrinsic
+      // for Cosmos this is signature + publicKey
+      const signResponse = await signer(signMessage)
 
       const { tabID } = signRequestQueue.unqueueSignRequest(id)
-      const signature = signWithPrivateKey(
-        signMessage,
-        Buffer.from(wallet.privateKey, 'hex')
-      )
       sendAsyncResponseToLunie(tabID, {
         type: 'LUNIE_SIGN_REQUEST_RESPONSE',
-        payload: {
-          signature: signature.toString('hex'),
-          publicKey: wallet.publicKey
-        }
+        payload: signResponse
       })
       sendResponse() // to popup
       break
