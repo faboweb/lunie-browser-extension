@@ -202,8 +202,10 @@ export default ({ apollo }) => {
     return wallet.cosmosAddress
   }
 
-  const parseSignMessageTx = (signRequest, displayedProperties) => {
-    return signRequest ? parseTx(signRequest, displayedProperties) : null
+  const parseSignMessageTx = (signRequest, network, displayedProperties) => {
+    return signRequest
+      ? parseTx(signRequest, network, displayedProperties)
+      : null
   }
 
   return {

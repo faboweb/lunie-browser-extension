@@ -100,10 +100,14 @@ export default {
     passwordError: false
   }),
   computed: {
-    ...mapGetters(['signRequest']),
+    ...mapGetters(['signRequest', 'networks']),
     tx() {
+      const network = this.networks.find(
+        ({ id }) => id === this.signRequest.network
+      )
       return parseSignMessageTx(
         this.signRequest.signMessage,
+        network,
         this.displayedProperties
       )
     },
