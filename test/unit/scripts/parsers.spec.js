@@ -45,11 +45,16 @@ describe(`parsers helper`, () => {
       fees: [{ denom: 'STAKE', amount: 0.00004 }],
       success: false
     }
-    expect(parseTx(JSON.stringify(signedMessage))).toEqual(parsedTx)
+    expect(
+      parseTx(JSON.stringify(signedMessage), { network_type: 'cosmos' })
+    ).toEqual(parsedTx)
   })
 
   it(`should parse a signedmessaged parseFee`, () => {
-    expect(parseTx(JSON.stringify(signedMessage)).fees[0].amount).toBe(0.00004)
+    expect(
+      parseTx(JSON.stringify(signedMessage), { network_type: 'cosmos' }).fees[0]
+        .amount
+    ).toBe(0.00004)
   })
 
   it(`should parse a signedmessaged parseFee if there are no fees`, () => {
