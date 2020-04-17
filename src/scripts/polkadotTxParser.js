@@ -13,17 +13,11 @@ import lunieMessageTypes from './messageTypes'
 export const parsePolkadotTx = async (network, lunieTransaction) => {
   // const api = await getPolkadotApi(network)
   // const extrinsic = api.createType('Extrinsic', signMessage) // TODO
-  const extrinsic = '' // temporary because of linter
-  const lunieTx = transactionReducerV2(
-    network,
-    extrinsic,
-    undefined,
-    {
-      coinReducer,
-      extractInvolvedAddresses
-    },
-    lunieTransaction
-  )
+  console.log(lunieTransaction)
+  const lunieTx = transactionReducerV2(network, lunieTransaction, undefined, {
+    coinReducer,
+    extractInvolvedAddresses
+  })
   return lunieTx
 }
 
@@ -77,14 +71,15 @@ function parsePolkadotTransaction(
   }
 }
 
-function transactionReducerV2(network, extrinsic, blockHeight, reducers) {
-  const hash = extrinsic.hash.toHex()
-  const signer = extrinsic.signer.toString()
-  const messages = aggregateLunieStaking(
-    extrinsic.method.meta.name.toString() === `batch`
-      ? extrinsic.method.args[0]
-      : [extrinsic.method]
-  )
+function transactionReducerV2(
+  network,
+  lunieTransaction,
+  blockHeight,
+  reducers
+) {
+  const hash = lunieTransaction.hash
+  const signer = lunieTransaction.from
+  const messages = lunieTransaction.details
   return messages.map((message, messageIndex) =>
     parsePolkadotTransaction(
       hash,
@@ -96,59 +91,6 @@ function transactionReducerV2(network, extrinsic, blockHeight, reducers) {
       reducers
     )
   )
-}
-
-// we display staking as one tx where in Polkadot this can be 2
-// so we aggregate the messags into 1
-// ATTENTION this could be weird for some users
-function aggregateLunieStaking(messages) {
-  // lunie staking message
-  let aggregatedLunieStaking = {
-    method: 'staking',
-    section: 'lunie',
-    validators: [],
-    amount: 0
-  }
-  let hasBond = false
-  let hasNominate = false
-  let reducedMessages = []
-  messages.forEach(current => {
-    if (
-      current.toHuman().section === 'staking' &&
-      current.toHuman().method === 'bond'
-    ) {
-      aggregatedLunieStaking.amount =
-        aggregatedLunieStaking.amount + current.args.value
-      hasBond = true
-    }
-
-    if (
-      current.toHuman().section === 'staking' &&
-      current.toHuman().method === 'bondExtra'
-    ) {
-      aggregatedLunieStaking.amount =
-        aggregatedLunieStaking.amount + current.args.max_additional
-      hasBond = true
-    }
-
-    if (
-      current.toHuman().section === 'staking' &&
-      current.toHuman().method === 'nominate'
-    ) {
-      aggregatedLunieStaking.validators = aggregatedLunieStaking.validators.concat(
-        current.args[0].toHuman()
-      )
-      hasNominate = true
-    }
-    reducedMessages.push({
-      section: current.toHuman().section,
-      method: current.toHuman().method,
-      args: JSON.parse(JSON.stringify(current.args, null, 2))
-    })
-  })
-  return hasBond && hasNominate
-    ? reducedMessages.concat(aggregatedLunieStaking)
-    : reducedMessages
 }
 
 // Map polkadot messages to our details format

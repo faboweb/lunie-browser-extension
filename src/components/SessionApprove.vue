@@ -106,6 +106,7 @@ export default {
       //   ({ id }) => id === this.signRequest.network.id
       // )
       return parseSignMessageTx(
+        this.signRequest,
         this.signRequest.network,
         this.signRequest.lunieTransaction
       )
@@ -115,6 +116,9 @@ export default {
     },
     fees() {
       return this.tx ? this.tx.fees[0].amount : null
+    },
+    lunieTx() {
+      return this.signRequest ? this.signRequest.lunieTransaction : {}
     },
     senderAddress() {
       return this.signRequest ? this.signRequest.senderAddress : null
@@ -142,7 +146,7 @@ export default {
     }
   },
   async mounted() {
-    const validatorsObject = await getValidatorsData(this.tx, this.network)
+    const validatorsObject = await getValidatorsData(this.lunieTx, this.network)
     this.validators = validatorsObject
   },
   methods: {
