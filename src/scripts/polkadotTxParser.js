@@ -4,7 +4,7 @@ import lunieMessageTypes from './cosmosTxParser'
 
 async function getPolkadotApi(network) {
   const api = new ApiPromise({
-    provider: new WsProvider(network.rpc_url)
+    provider: new WsProvider(network.rpc_url) // need to use public polkadot API as ours is IP locked
   })
   await api.isReady
   return api
