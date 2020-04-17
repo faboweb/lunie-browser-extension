@@ -1,23 +1,9 @@
 import BigNumber from 'bignumber.js'
 import lunieMessageTypes from './messageTypes'
 
-export const parseCosmosTx = (signMessage, network, displayedProperties) => {
-  const { msgs, fee, memo } = JSON.parse(signMessage)
-
-  const tx = {
-    tx: {
-      type: 'auth/StdTx',
-      value: {
-        msg: msgs,
-        fee,
-        memo
-      }
-    }
-  }
-
+export const parseCosmosTx = (network, lunieTransaction) => {
   return transactionReducerV2(
-    tx,
-    displayedProperties,
+    lunieTransaction,
     { coinReducer, rewardCoinReducer },
     network.stakingDenom
   )[0] // TODO get staking denom (apollo/networks)
@@ -113,20 +99,12 @@ function coinReducer(coin) {
   }
 }
 
-function transactionReducerV2(
-  transaction,
-  displayedProperties,
-  reducers,
-  stakingDenom
-) {
-  // TODO check if this is anywhere not an array
-  let fees
-  if (Array.isArray(transaction.tx.value.fee.amount)) {
-    fees = transaction.tx.value.fee.amount.map(coinReducer)
-  } else {
-    fees = [coinReducer(transaction.tx.value.fee.amount)]
-  }
+function transactionReducerV2(lunieTransaction, reducers, stakingDenom) {
+  const fees = lunieTransaction.fee
+  const transaction = {} // temporary because of linting
   // We do display only the transactions we support in Lunie
+
+  // TODO: hyper-simplify using just lunieTransaction
   const filteredMessages = transaction.tx.value.msg.filter(
     ({ type }) => getMessageType(type) !== 'Unknown'
   )
@@ -158,7 +136,7 @@ function transactionReducerV2(
     details: transactionDetailsReducer(
       getMessageType(type),
       value,
-      displayedProperties,
+      lunieTransaction,
       reducers,
       transaction,
       stakingDenom
@@ -175,7 +153,7 @@ function transactionReducerV2(
 function transactionDetailsReducer(
   type,
   message,
-  displayedProperties,
+  lunieTransaction,
   reducers,
   transaction,
   stakingDenom
@@ -197,7 +175,7 @@ function transactionDetailsReducer(
     case lunieMessageTypes.CLAIM_REWARDS:
       details = claimRewardsDetailsReducer(
         message,
-        displayedProperties,
+        lunieTransaction,
         reducers,
         transaction,
         stakingDenom
@@ -265,10 +243,10 @@ function unstakeDetailsReducer(message, reducers) {
   }
 }
 
-function claimRewardsDetailsReducer(message, displayedProperties) {
+function claimRewardsDetailsReducer(message, lunieTransaction) {
   return {
     from: message.validators,
-    amounts: displayedProperties.claimableRewards
+    amounts: lunieTransaction.details.amounts
   }
 }
 

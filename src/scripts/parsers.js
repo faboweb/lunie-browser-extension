@@ -3,11 +3,11 @@
 import { parseCosmosTx } from './cosmosTxParser'
 import { parsePolkadotTx } from './polkadotTxParser'
 
-export const parseTx = (signMessage, network, displayedProperties) => {
+export const parseTx = (network, lunieTransaction) => {
   if (network.network_type === 'cosmos') {
-    return parseCosmosTx(signMessage, network, displayedProperties)
+    return parseCosmosTx(network, lunieTransaction)
   }
   if (network.network_type === 'polkadot') {
-    return parsePolkadotTx(signMessage, network, displayedProperties)
+    return parsePolkadotTx(network, lunieTransaction)
   }
 }

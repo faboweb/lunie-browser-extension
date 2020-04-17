@@ -1,21 +1,29 @@
-import { ApiPromise, WsProvider } from '@polkadot/api'
+// import { ApiPromise, WsProvider } from '@polkadot/api'
 import BigNumber from 'bignumber.js'
 import lunieMessageTypes from './messageTypes'
 
-async function getPolkadotApi(network) {
-  const api = new ApiPromise({
-    provider: new WsProvider(network.rpc_url) // need to use public polkadot API as ours is IP locked
-  })
-  await api.isReady
-  return api
-}
+// async function getPolkadotApi(network) {
+//   const api = new ApiPromise({
+//     provider: new WsProvider(network.rpc_url) // need to use public polkadot API as ours is IP locked
+//   })
+//   await api.isReady
+//   return api
+// }
 
-export const parsePolkadotTx = async (signMessage, network) => {
-  const api = await getPolkadotApi(network)
-  const extrinsic = api.createType('Extrinsic', signMessage)
-  const lunieTx = transactionReducerV2(network, extrinsic, undefined, {
-    coinReducer
-  })
+export const parsePolkadotTx = async (network, lunieTransaction) => {
+  // const api = await getPolkadotApi(network)
+  // const extrinsic = api.createType('Extrinsic', signMessage) // TODO
+  const extrinsic = '' // temporary because of linter
+  const lunieTx = transactionReducerV2(
+    network,
+    extrinsic,
+    undefined,
+    {
+      coinReducer,
+      extractInvolvedAddresses
+    },
+    lunieTransaction
+  )
   return lunieTx
 }
 
@@ -182,6 +190,23 @@ function coinReducer(network, amount) {
       .times(network.coinLookup[0].chainToViewConversionFactor)
       .toFixed(9)
   }
+}
+
+function extractInvolvedAddresses(transaction) {
+  // If the transaction has failed, it doesn't get tagged
+  if (!Array.isArray(transaction.tags)) return []
+
+  const involvedAddresses = transaction.tags.reduce((addresses, tag) => {
+    // temporary in here to identify why this fails
+    if (!tag.value) {
+      return addresses
+    }
+    if (tag.value.startsWith(`cosmos`)) {
+      addresses.push(tag.value)
+    }
+    return addresses
+  }, [])
+  return involvedAddresses
 }
 
 function sendDetailsReducer(network, message, signer, reducers) {

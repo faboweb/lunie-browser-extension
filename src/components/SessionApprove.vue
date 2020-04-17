@@ -102,13 +102,12 @@ export default {
   computed: {
     ...mapGetters(['signRequest', 'networks']),
     tx() {
-      const network = this.networks.find(
-        ({ id }) => id === this.signRequest.network
-      )
+      // const network = this.networks.find(
+      //   ({ id }) => id === this.signRequest.network.id
+      // )
       return parseSignMessageTx(
-        this.signRequest.signMessage,
-        network,
-        this.displayedProperties
+        this.signRequest.network,
+        this.signRequest.lunieTransaction
       )
     },
     network() {
@@ -119,9 +118,6 @@ export default {
     },
     senderAddress() {
       return this.signRequest ? this.signRequest.senderAddress : null
-    },
-    displayedProperties() {
-      return this.signRequest ? this.signRequest.displayedProperties : null
     },
     amountCoin() {
       return this.tx ? this.tx.details.amount : null
