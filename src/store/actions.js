@@ -2,7 +2,6 @@ import config from '../../config.js'
 import gql from 'graphql-tag'
 import { NetworksAll } from '../popup/gql'
 import lunieMessageTypes from '../scripts/messageTypes'
-import { parseTx } from '../scripts/parsers.js'
 import { getWallet } from '../../lunie/src/vuex/modules/wallet'
 import { storeWallet } from '@lunie/cosmos-keys'
 
@@ -202,9 +201,6 @@ export default ({ apollo }) => {
     return wallet.cosmosAddress
   }
 
-  const parseSignMessageTx = (signRequest, network, lunieTransaction) => {
-    return signRequest ? parseTx(signRequest, network, lunieTransaction) : null
-  }
 
   return {
     createSeed,
@@ -221,7 +217,6 @@ export default ({ apollo }) => {
     resetRecoverData,
     getAddressFromSeed,
     setNetwork,
-    preloadNetworkCapabilities,
-    parseSignMessageTx
+    preloadNetworkCapabilities
   }
 }
