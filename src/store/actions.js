@@ -201,7 +201,6 @@ export default ({ apollo }) => {
     return wallet.cosmosAddress
   }
 
-
   return {
     createSeed,
     createKey,

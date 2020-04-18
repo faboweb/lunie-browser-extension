@@ -117,10 +117,26 @@ export default {
       return this.signRequest ? this.signRequest.senderAddress : null
     },
     amount() {
-      return this.tx ? this.tx.details.amount.amount : 0
+      if (this.tx && this.tx.type === 'ClaimRewardsTx') {
+        return (
+          this.tx.details.amounts.find(
+            ({ denom }) => denom === this.signRequest.network.stakingDenom
+          ).amount || 0
+        )
+      } else {
+        return this.tx.details.amount.amount || []
+      }
     },
     bondDenom() {
-      return this.tx ? this.tx.details.amount.denom : ''
+      if (this.tx && this.tx.type === 'ClaimRewardsTx') {
+        return (
+          this.tx.details.amounts.find(
+            ({ denom }) => denom === this.signRequest.network.stakingDenom
+          ).denom || ''
+        )
+      } else {
+        return this.tx.details.amount.denom || ''
+      }
     },
     validatorsAddressMap() {
       const names = {}
