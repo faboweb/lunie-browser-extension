@@ -81,7 +81,6 @@ import { required } from 'vuelidate/lib/validators'
 import actions from '../store/actions.js'
 
 const getValidatorsData = actions({}).getValidatorsData
-const parseSignMessageTx = actions({}).parseSignMessageTx
 
 export default {
   name: `session-approve`,
@@ -102,23 +101,17 @@ export default {
   computed: {
     ...mapGetters(['signRequest', 'networks']),
     tx() {
-      // const network = this.networks.find(
-      //   ({ id }) => id === this.signRequest.network.id
-      // )
-      return parseSignMessageTx(
-        this.signRequest,
-        this.signRequest.network,
-        this.signRequest.lunieTransaction
-      )
+      if (this.signRequest) {
+        return this.signRequest.lunieTransaction
+      } else {
+        return {}
+      }
     },
     network() {
       return this.signRequest ? this.signRequest.network : null
     },
     fees() {
       return this.tx ? this.tx.fees.amount : null
-    },
-    lunieTx() {
-      return this.signRequest ? this.signRequest.lunieTransaction : {}
     },
     senderAddress() {
       return this.signRequest ? this.signRequest.senderAddress : null
@@ -143,8 +136,13 @@ export default {
     }
   },
   async mounted() {
-    const validatorsObject = await getValidatorsData(this.lunieTx, this.network)
-    this.validators = validatorsObject
+    if (this.signRequest) {
+      const validatorsObject = await getValidatorsData(
+        this.signRequest.lunieTransaction,
+        this.network
+      )
+      this.validators = validatorsObject
+    }
   },
   methods: {
     isValidInput(property) {

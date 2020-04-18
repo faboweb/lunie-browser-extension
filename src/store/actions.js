@@ -79,20 +79,20 @@ export default ({ apollo }) => {
       lunieTx.type === lunieMessageTypes.STAKE ||
       lunieTx.type === lunieMessageTypes.RESTAKE
     ) {
-      validators.push(...lunieTx.details.to)
+      validators = lunieTx.details.to
     }
     if (
       lunieTx.type === lunieMessageTypes.UNSTAKE ||
       lunieTx.type === lunieMessageTypes.RESTAKE ||
       lunieTx.type === lunieMessageTypes.CLAIM_REWARDS
     ) {
-      validators.push(...lunieTx.details.from)
+      validators = lunieTx.details.from
     }
     return await Promise.all(
       validators.map(async validatorAddress => {
         const { name: validatorToMoniker, picture } = await fetchValidatorData(
           validatorAddress,
-          network
+          network.id
         )
         return {
           operatorAddress: validatorAddress,
