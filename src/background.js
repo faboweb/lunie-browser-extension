@@ -1,7 +1,7 @@
 import 'core-js/stable'
 import 'regenerator-runtime/runtime'
 import { signMessageHandler, walletMessageHandler } from './messageHandlers'
-import SignRequestQueue from './requests'
+import SignRequestStore from './requests'
 import { bindRequestsToTabs } from './tabsHandler'
 
 global.browser = require('webextension-polyfill')
@@ -17,8 +17,7 @@ if (process.env.NODE_ENV === 'development') {
   whitelisted.push('http://localhost')
 }
 
-const signRequestQueue = new SignRequestQueue()
-signRequestQueue.unqueueSignRequest('')
+const signRequestStore = new SignRequestStore()
 
 // main message handler
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -28,7 +27,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   try {
-    signMessageHandler(signRequestQueue, message, sender, sendResponse)
+    signMessageHandler(signRequestStore, message, sender, sendResponse)
     walletMessageHandler(message, sender, sendResponse)
   } catch (error) {
     // Return this as rejected
@@ -60,4 +59,4 @@ const whitelistedChecker = url => {
   })
 }
 
-bindRequestsToTabs(signRequestQueue, whitelistedChecker)
+bindRequestsToTabs(signRequestStore)

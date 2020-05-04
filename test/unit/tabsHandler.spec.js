@@ -5,7 +5,7 @@ describe('Sign request queue', () => {
 
   beforeEach(() => {
     signRequestQueue = {
-      unqueueSignRequestForTab: jest.fn()
+      removeSignRequestForTab: jest.fn()
     }
   })
 
@@ -18,8 +18,8 @@ describe('Sign request queue', () => {
     }
     bindRequestsToTabs(signRequestQueue, [])
 
-    expect(signRequestQueue.unqueueSignRequestForTab).toHaveBeenCalledWith(42)
-    expect(signRequestQueue.unqueueSignRequestForTab).toHaveBeenCalledTimes(1)
+    expect(signRequestQueue.removeSignRequestForTab).toHaveBeenCalledWith(42)
+    expect(signRequestQueue.removeSignRequestForTab).toHaveBeenCalledTimes(1)
   })
 
   it('kills on tab url not accepted', () => {
@@ -30,7 +30,7 @@ describe('Sign request queue', () => {
       }
     }
     bindRequestsToTabs(signRequestQueue, ['https://lunie.io'])
-    expect(signRequestQueue.unqueueSignRequestForTab).not.toHaveBeenCalled()
+    expect(signRequestQueue.removeSignRequestForTab).not.toHaveBeenCalled()
 
     global.chrome = {
       tabs: {
@@ -44,7 +44,7 @@ describe('Sign request queue', () => {
       ['https://lunie.io'].find(whitelisted => whitelisted.startsWith(url))
     )
 
-    expect(signRequestQueue.unqueueSignRequestForTab).toHaveBeenCalledWith(42)
-    expect(signRequestQueue.unqueueSignRequestForTab).toHaveBeenCalledTimes(1)
+    expect(signRequestQueue.removeSignRequestForTab).toHaveBeenCalledWith(42)
+    expect(signRequestQueue.removeSignRequestForTab).toHaveBeenCalledTimes(1)
   })
 })
