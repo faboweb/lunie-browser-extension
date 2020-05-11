@@ -10,118 +10,128 @@ const {
 } = require('../lunie/src/signing/transaction-manager')
 
 export async function signMessageHandler(
-  signRequestQueue,
+  signRequestStore,
   event,
   sender,
   sendResponse
 ) {
-  switch (event.type) {
-    case 'LUNIE_SIGN_REQUEST_CANCEL': {
-      signRequestQueue.unqueueSignRequestForTab(sender.tab.id)
-      break
-    }
-    case 'LUNIE_GET_SIGN_QUEUE': {
-      sendAsyncResponseToLunie(sender.tab.id, {
-        type: 'LUNIE_GET_SIGN_QUEUE_RESPONSE',
-        payload: {
-          amount: signRequestQueue.getQueueLength()
-        }
-      })
-      break
-    }
-    case 'LUNIE_SIGN_REQUEST': {
-      const {
-        // old messaging
-        signMessage, //DEPRECATE
-        displayedProperties, //DEPRECATE
-
-        messageType,
-        message,
-        transactionData,
-        senderAddress,
-        network
-      } = event.payload
-      const wallet = getWalletFromIndex(getWalletIndex(), senderAddress)
-      if (!wallet) {
-        throw new Error('No wallet found matching the sender address.')
+  try {
+    switch (event.type) {
+      // DEPRECATE
+      case 'LUNIE_SIGN_REQUEST_CANCEL': {
+        signRequestStore.removeSignRequestForTab(sender.tab.id)
+        break
       }
-
-      signRequestQueue.queueSignRequest({
-        signMessage, // DEPRECATE
-        displayedProperties, //DEPRECATE
-
-        messageType,
-        message,
-        transactionData,
-        senderAddress,
-        network,
-        tabID: sender.tab.id
-      })
-      break
-    }
-    case 'SIGN': {
-      const {
-        signMessage, // DEPRECATE
-
-        messageType,
-        message,
-        transactionData,
-        senderAddress,
-        network,
-        password,
-        id
-      } = event.payload
-
-      const { tabID } = signRequestQueue.unqueueSignRequest(id)
-      if (signMessage) {
-        const wallet = getStoredWallet(senderAddress, password)
-        const signature = signWithPrivateKey(
-          signMessage,
-          Buffer.from(wallet.privateKey, 'hex')
-        )
-
-        sendAsyncResponseToLunie(tabID, {
-          type: 'LUNIE_SIGN_REQUEST_RESPONSE',
+      // DEPRECATE
+      case 'LUNIE_GET_SIGN_QUEUE': {
+        sendAsyncResponseToLunie(sender.tab.id, {
+          type: 'LUNIE_GET_SIGN_QUEUE_RESPONSE',
           payload: {
-            signature: signature.toString('hex'),
-            publicKey: wallet.publicKey
+            amount: signRequestStore.getSignRequest() ? 1 : 0
           }
         })
-      } else {
-        const transactionManager = new TransactionManager()
-        const broadcastableObject = await transactionManager.createAndSignLocally(
+        break
+      }
+      case 'LUNIE_SIGN_REQUEST': {
+        const {
+          // old messaging
+          signMessage, //DEPRECATE
+          displayedProperties, //DEPRECATE
+
+          messageType,
+          message,
+          transactionData,
+          senderAddress,
+          network
+        } = event.payload
+        const wallet = getWalletFromIndex(getWalletIndex(), senderAddress)
+        if (!wallet) {
+          throw new Error('No wallet found matching the sender address.')
+        }
+
+        signRequestStore.storeSignRequest({
+          signMessage, // DEPRECATE
+          displayedProperties, //DEPRECATE
+
           messageType,
           message,
           transactionData,
           senderAddress,
           network,
-          'local',
-          password
-        )
+          tabID: sender.tab.id
+        })
+        break
+      }
+      case 'SIGN': {
+        const {
+          signMessage, // DEPRECATE
 
+          messageType,
+          message,
+          transactionData,
+          senderAddress,
+          network,
+          password,
+          id
+        } = event.payload
+
+        const { tabID } = signRequestStore.removeSignRequest(id)
+        if (signMessage) {
+          const wallet = getStoredWallet(senderAddress, password)
+          const signature = signWithPrivateKey(
+            signMessage,
+            Buffer.from(wallet.privateKey, 'hex')
+          )
+
+          sendAsyncResponseToLunie(tabID, {
+            type: 'LUNIE_SIGN_REQUEST_RESPONSE',
+            payload: {
+              signature: signature.toString('hex'),
+              publicKey: wallet.publicKey
+            }
+          })
+        } else {
+          const transactionManager = new TransactionManager()
+          const broadcastableObject = await transactionManager.createAndSignLocally(
+            messageType,
+            message,
+            transactionData,
+            senderAddress,
+            network,
+            'local',
+            password
+          )
+
+          sendAsyncResponseToLunie(tabID, {
+            type: 'LUNIE_SIGN_REQUEST_RESPONSE',
+            payload: broadcastableObject
+          })
+        }
+
+        sendResponse() // to popup
+        break
+      }
+      case 'GET_SIGN_REQUEST': {
+        sendResponse(signRequestStore.getSignRequest())
+        break
+      }
+      case 'REJECT_SIGN_REQUEST': {
+        const { id, tabID } = event.payload
         sendAsyncResponseToLunie(tabID, {
           type: 'LUNIE_SIGN_REQUEST_RESPONSE',
-          payload: broadcastableObject
+          payload: { rejected: true }
         })
+        signRequestStore.removeSignRequest(id)
+        sendResponse() // to popup
+        break
       }
-
-      sendResponse() // to popup
-      break
     }
-    case 'GET_SIGN_REQUEST': {
-      sendResponse(signRequestQueue.getSignRequest())
-      break
-    }
-    case 'REJECT_SIGN_REQUEST': {
-      const { id, tabID } = event.payload
-      sendAsyncResponseToLunie(tabID, {
-        type: 'LUNIE_SIGN_REQUEST_RESPONSE',
-        payload: { rejected: true }
-      })
-      signRequestQueue.unqueueSignRequest(id)
-      sendResponse() // to popup
-      break
-    }
+  } catch (error) {
+    const { tabID } = event.payload
+    sendAsyncResponseToLunie(tabID || sender.tab.id, {
+      type: 'LUNIE_SIGN_REQUEST_RESPONSE',
+      payload: { error: error.message }
+    })
   }
 }
 export function walletMessageHandler(message, sender, sendResponse) {

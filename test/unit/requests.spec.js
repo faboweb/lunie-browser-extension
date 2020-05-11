@@ -33,9 +33,9 @@ describe('Sign request queue', () => {
     expect(instance.getSignRequest()).toEqual(undefined)
   })
 
-  it('should unqueueSignRequestForTab', () => {
+  it('should removeSignRequestForTab', () => {
     instance.queueSignRequest(mockSignRequest)
-    instance.unqueueSignRequestForTab(42)
+    instance.removeSignRequestForTab(42)
 
     expect(instance.getSignRequest()).toEqual(undefined)
   })
@@ -52,7 +52,7 @@ describe('Sign request queue', () => {
 
       global.chrome.browserAction.setIcon.mockClear()
 
-      instance.unqueueSignRequestForTab(42)
+      instance.removeSignRequestForTab(42)
       expect(global.chrome.browserAction.setIcon).toHaveBeenCalled()
     })
   })
