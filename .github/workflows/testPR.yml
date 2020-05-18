@@ -51,9 +51,7 @@ jobs:
         run: yarn run lint
       - name: 3 - Unit tests
         continue-on-error: true
-        run:
-          name: Test
-          command: |
+        run: |
             # notify Code Climate of a pending test report using `before-build`
             # ./cc-test-reporter before-build
             yarn run initiate-submodule
