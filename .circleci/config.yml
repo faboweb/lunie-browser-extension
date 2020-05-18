@@ -31,66 +31,6 @@ commands:
           key: v1-dependencies-app-root-{{ checksum "lunie/yarn.lock" }}
 
 jobs:
-  pendingUpdated:
-    docker:
-      - image: circleci/node:10.15.3
-    steps:
-      - checkout
-      - run: yarn add simsala
-      - run: node node_modules/simsala/src/cli.js check 
-
-  lint:
-    docker:
-      - image: circleci/node:10.15.3
-    steps:
-      - checkout
-      - yarn-install
-      - run: yarn run lint
-
-  testUnit:
-    docker:
-      - image: circleci/node:10.15.3
-    steps:
-      - checkout
-      - yarn-install
-      # - run:
-      #     name: Setup Code Climate test-reporter
-      #     command: |
-      #       # download test reporter as a static binary
-      #       curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-      #       chmod +x ./cc-test-reporter
-      - run:
-          name: Test
-          command: |
-            # notify Code Climate of a pending test report using `before-build`
-            # ./cc-test-reporter before-build
-            yarn run initiate-submodule
-            yarn run test
-            # upload test report to Code Climate
-            # ./cc-test-reporter format-coverage -t lcov ./coverage/lcov.info
-            # ./cc-test-reporter upload-coverage
-          no_output_timeout: 120
-
-  security:
-    docker:
-      - image: circleci/node:10.15.3
-    steps:
-      - checkout
-      - run:
-          name: Audit
-          command: |
-            set +e
-
-            SUMMARY="$(yarn audit | grep Severity)"
-            VULNERABILITIES=".*(High|Critical).*"
-
-            if [[ $SUMMARY =~ $VULNERABILITIES ]]; then
-              echo "Unsafe dependencies found: $SUMMARY" >&2
-              exit 1
-            fi
-            echo "Your dependencies are secure enough: $SUMMARY"
-            exit 0
-  
   testE2E:
     machine: true
     steps:
@@ -198,31 +138,6 @@ workflows:
   version: 2
   testPR:
     jobs:
-      # Static checks before
-      - pendingUpdated:
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
-                - develop
-                - /release-candidate.*/
-
-      - security:
-          filters:
-            branches:
-              ignore: release
-
-      - lint:
-          filters:
-            branches:
-              ignore: release
-
-      - testUnit:
-          filters:
-            branches:
-              ignore: release
-
       # - testE2E:
       #     filters:
       #       branches:
