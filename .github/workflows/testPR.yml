@@ -77,7 +77,8 @@ jobs:
   test_e2e:
     name: testE2E
     runs-on: ubuntu-latest
-      - uses: actions/checkout@v1
+      - name: Checkout
+        uses: actions/checkout@v1
       - name: Use Node.js
         uses: actions/setup-node@v1
       - name: Install dependencies
