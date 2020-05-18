@@ -63,18 +63,18 @@ jobs:
             # ./cc-test-reporter upload-coverage
         # no_output_timeout: 120
       - name: 4 - Audit
-      run: |
-        set +e
+        run: |
+          set +e
 
-        SUMMARY="$(yarn audit | grep Severity)"
-        VULNERABILITIES=".*(High|Critical).*"
+          SUMMARY="$(yarn audit | grep Severity)"
+          VULNERABILITIES=".*(High|Critical).*"
 
-        if [[ $SUMMARY =~ $VULNERABILITIES ]]; then
-          echo "Unsafe dependencies found: $SUMMARY" >&2
-          exit 1
-        fi
-        echo "Your dependencies are secure enough: $SUMMARY"
-        exit 0
+          if [[ $SUMMARY =~ $VULNERABILITIES ]]; then
+            echo "Unsafe dependencies found: $SUMMARY" >&2
+            exit 1
+          fi
+          echo "Your dependencies are secure enough: $SUMMARY"
+          exit 0
 
   # test_e2e:
   #   name: testE2E
