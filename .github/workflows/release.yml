@@ -1,0 +1,21 @@
+name: Release PR
+
+on:
+  pull_request:
+    branches:
+      - "release"
+
+jobs:
+  release:
+    name: createReleasePR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+      - name: Install dependencies
+        run: yarn && yarn add simsala
+      - name: Configure release bot
+        run: git config user.email "bot@lunie.io" && git config user.name "Release Lunie Bot"
+      - name: Create release PR
+        run: node node_modules/simsala/src/cli.js release-candidate --owner luniehq --repository lunie-browser-extension --token $GIT_BOT_TOKEN

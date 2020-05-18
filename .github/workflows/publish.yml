@@ -1,0 +1,18 @@
+name: Publish PR
+
+on:
+  push:
+    branches:
+      - develop
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  publishPR:
+    name: publishPR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: ./scripts/publish.sh
