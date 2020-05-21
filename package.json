@@ -124,7 +124,7 @@
     "mini-css-extract-plugin": "^0.4.4",
     "nightwatch": "^1.1.13",
     "node-sass": "^4.9.3",
-    "prettier": "^1.17.1",
+    "prettier": "^2.0.5",
     "sass-loader": "^7.1.0",
     "selenium-server": "^3.141.59",
     "simsala": "^0.0.21",
