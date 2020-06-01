@@ -10,27 +10,27 @@ export function getDisplayTransaction(
 ) {
   let fees = []
   if (network.network_type === 'cosmos') {
-    const gasPrice = transactionData.gasPrices[0] // HACK
     const coinLookup = network.coinLookup.find(
-      ({ chainDenom }) => chainDenom === gasPrice.denom
+      ({ chainDenom }) =>
+        chainDenom === transactionData.fee.find(({ denom }) => denom).denom
     )
     fees = [
       {
-        amount: BigNumber(gasPrice.amount)
-          .times(transactionData.gasEstimate)
+        amount: BigNumber(
+          transactionData.fee.find(({ amount }) => amount).amount
+        )
           .times(coinLookup.chainToViewConversionFactor)
           .toString(),
         denom: coinLookup.viewDenom
       }
     ]
   }
-  if (network.network_type === 'polkadot' && !!transactionData.fee) {
-    fees = [
-      {
-        amount: transactionData.fee.amount,
-        denom: transactionData.fee.denom
-      }
-    ]
+  if (
+    network.network_type === 'polkadot' &&
+    transactionData &&
+    !!transactionData.fee
+  ) {
+    fees = transactionData.fee
   }
   return {
     type: messageType,

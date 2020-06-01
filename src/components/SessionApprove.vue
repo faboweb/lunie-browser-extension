@@ -20,8 +20,8 @@
         v-if="tx"
         class="approval-table"
         :amount="amount"
-        :estimated-fee="fees"
-        :bond-denom="bondDenom"
+        :fee="fees"
+        :transaction-denom="invoiceDenom"
       />
       <TmFormGroup
         :error="$v.password.$error && $v.password.$invalid"
@@ -62,6 +62,7 @@
           value="Approve"
           class="right-button"
           type="primary"
+          :loading="isTransactionBroadcasting"
           @click.native="approve"
         />
       </div>
@@ -98,7 +99,8 @@ export default {
   data: () => ({
     validators: [],
     password: null,
-    passwordError: false
+    passwordError: false,
+    isTransactionBroadcasting: false
   }),
   computed: {
     ...mapGetters(['signRequest', 'networks']),
@@ -130,7 +132,7 @@ export default {
       return this.signRequest ? this.signRequest.network : null
     },
     fees() {
-      return this.tx && this.tx.fees[0] ? Number(this.tx.fees[0].amount) : 0
+      return this.tx && this.tx.fees[0] ? this.tx.fees[0] : {}
     },
     senderAddress() {
       return this.signRequest ? this.signRequest.senderAddress : null
@@ -141,8 +143,14 @@ export default {
     amount() {
       return this.amountCoin ? Number(this.amountCoin.amount) : 0
     },
-    bondDenom() {
-      return this.amountCoin ? this.amountCoin.denom : ''
+    invoiceDenom() {
+      if (this.amountCoin) {
+        return this.amountCoin.denom
+      }
+      if (this.tx && this.tx.fees[0]) {
+        return this.tx.fees.find(({ denom }) => denom).denom
+      }
+      return ''
     },
     validatorsAddressMap() {
       const names = {}
@@ -171,6 +179,7 @@ export default {
     },
     async approve() {
       if (this.isValidInput('password')) {
+        this.isTransactionBroadcasting = true
         await this.$store
           .dispatch('approveSignRequest', {
             ...this.signRequest,
@@ -183,6 +192,7 @@ export default {
             console.error(error)
             return
           })
+        this.isTransactionBroadcasting = false
         this.$router.push(`/success`)
       }
     },
@@ -258,9 +268,7 @@ export default {
 .left-button {
   margin-right: 0.5rem;
 }
-</style>
 
-<style>
 .approval-table .table-invoice {
   padding: 0.5rem 0;
   margin: 1rem 0;
